@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Valentine's Day Journey</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Montserrat:wght@700&family=Open+Sans&family=Indie+Flower&family=Kanit&display=swap" rel="stylesheet" />
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: #fff0f6;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    /* Page Transition */
+    .page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      display: none;
+      padding: 1rem;
+      box-sizing: border-box;
+      transform: translateY(0);
+      opacity: 1;
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), 
+                  opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 1;
+    }
+    
+    .page.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .page.leaving {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    
+    .page.entering {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    
+    /* New transition animations */
+    .page.slide-left.leaving {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    
+    .page.slide-left.entering {
+      transform: translateX(20px);
+      opacity: 0;
+    }
+    
+    .page.slide-right.leaving {
+      transform: translateX(20px);
+      opacity: 0;
+    }
+    
+    .page.slide-right.entering {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    
+    .page.zoom.leaving {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    
+    .page.zoom.entering {
+      transform: scale(1.05);
+      opacity: 0;
+    }
+    
+    .page.flip.leaving {
+      transform: perspective(1000px) rotateY(90deg);
+      opacity: 0;
+    }
+    
+    .page.flip.entering {
+      transform: perspective(1000px) rotateY(-90deg);
+      opacity: 0;
+    }
+    
+    /* Transition overlay */
+    .transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #ff4d6d, #ff8fab);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    
+    .transition-overlay.active {
+      opacity: 1;
+    }
+    
+    .transition-overlay i {
+      font-size: 3rem;
+      color: white;
+      animation: pulse 1.5s infinite;
+    }
+    
+    /* Login Page Styles */
+    .login-page {
+      font-family: "Fredoka One", cursive;
+      position: relative;
+      background: #fff0f6;
+    }
+    
+    /* Heart floating animation */
+    .heart {
+      position: fixed;
+      bottom: -50px;
+      width: 20px;
+      height: 20px;
+      background-color: #ff4d6d;
+      transform: rotate(-45deg);
+      animation: floatUp linear forwards;
+      opacity: 0.8;
+      z-index: 0;
+      filter: drop-shadow(0 0 2px #ff4d6d);
+      cursor: default;
+      user-select: none;
+    }
+    
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: #ff4d6d;
+      border-radius: 50%;
+    }
+    
+    .heart::before {
+      top: -10px;
+      left: 0;
+    }
+    
+    .heart::after {
+      top: 0;
+      left: 10px;
+    }
+    
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(-45deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-600px) rotate(-45deg);
+        opacity: 0;
+      }
+    }
+    
+    /* Shake animation */
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      10%, 30%, 50%, 70%, 90% { transform: translate(-5px, 0); }
+      20%, 40%, 60%, 80% { transform: translate(5px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+    
+    .shake {
+      animation: shake 0.5s;
+    }
+    
+    /* Login container */
+    #login-container {
+      background: #ffffff;
+      border: 3px solid #ff4d6d;
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(255, 77, 109, 0.15);
+      position: relative;
+      z-index: 10;
+    }
+    
+    /* Input styling */
+    #passcodeInput {
+      border-radius: 0.75rem;
+      border: 2px solid #1a1a4b;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #ff4d6d;
+      background-color: #ffffff;
+      text-align: center;
+      padding: 0.75rem 1rem;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      user-select: none;
+      letter-spacing: 0.3em;
+      transition: border-color 0.3s ease;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    
+    /* Keyboard grid */
+    .keyboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    
+    /* Button styles */
+    .login-btn {
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background-color: #f7f7f0;
+      color: #1a1a4b;
+      font-weight: 700;
+      font-size: 1.25rem;
+      border-radius: 0.75rem;
+      border: 2px solid #1a1a4b;
+      padding: 1rem;
+      user-select: none;
+      cursor: pointer;
+    }
+    
+    .login-btn:hover {
+      background-color: #ff4d6d;
+      color: white;
+      border-color: #ff4d6d;
+    }
+    
+    #clearBtn {
+      background-color: #ff4d6d;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 1.5rem;
+      border-color: #ff4d6d;
+      box-shadow: 0 6px 12px rgba(255, 77, 109, 0.6);
+    }
+    
+    /* Image box */
+    .image-box {
+      background: #f7f7f0;
+      border: 2px dotted #6b6b6b;
+      border-radius: 1rem;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .image-box img {
+      max-width: 140px;
+      max-height: 140px;
+      border-radius: 1rem;
+    }
+    
+    /* Day Page Styles */
+    .day-page {
+      font-family: 'Open Sans', sans-serif;
+      background: #fff0f6;
+    }
+    
+    #day-container {
+      background: white;
+      border-radius: 1.5rem;
+      max-width: 32rem;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .font-montserrat {
+      font-family: 'Montserrat', sans-serif;
+    }
+    
+    .pulse-heart {
+      animation: pulse 1.5s infinite;
+      color: #ec4899;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+    }
+    
+    .fade-in-up {
+      animation: fadeInUp 0.8s ease forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .fade-in-up.delay-1 { animation-delay: 0.2s; }
+    .fade-in-up.delay-2 { animation-delay: 0.4s; }
+    .fade-in-up.delay-3 { animation-delay: 0.6s; }
+    .fade-in-up.delay-4 { animation-delay: 0.8s; }
+    
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .btn-glow {
+      box-shadow: 0 0 8px #ec4899;
+      transition: box-shadow 0.3s ease;
+    }
+    
+    .btn-glow:hover {
+      box-shadow: 0 0 20px #db2777;
+    }
+    
+    .icon-spin {
+      animation: spin 4s linear infinite;
+      color: #db2777;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Momen Page Styles */
+    .momen-page {
+      font-family: "Indie Flower", cursive;
+      background: linear-gradient(to bottom right, #fdf2f8, #ffffff, #fdf2f8);
+    }
+    
+    #momen-container {
+      max-width: 420px;
+      width: 100%;
+    }
+    
+    .polaroid {
+      background: white;
+      padding: 0.75rem 0.75rem 1.75rem 0.75rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .polaroid:hover {
+      transform: scale(1.05);
+      box-shadow: 0 15px 30px rgba(219, 39, 119, 0.4);
+    }
+    
+    .polaroid img {
+      border-radius: 0.5rem;
+      object-fit: cover;
+      width: 100%;
+      height: 140px;
+    }
+    
+    .polaroid-caption {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #db2777;
+      font-weight: 600;
+    }
+    
+    .heartbeat {
+      animation: heartbeat 1.5s infinite;
+      color: #db2777;
+    }
+    
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+    
+    .next-button {
+      margin-top: 1rem;
+      background-color: #db2777;
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(219, 39, 119, 0.6);
+    }
+    
+    /* Ucapan Page Styles */
+    .ucapan-page {
+      font-family: "Kanit", sans-serif;
+      background: linear-gradient(to bottom right, #fdf2f8, #ffffff, #fdf2f8);
+    }
+    
+    #ucapan-container {
+      background: white;
+      border-radius: 1.5rem;
+      border: 1px solid #fecdd3;
+      padding: 2rem;
+      max-width: 32rem;
+      width: 100%;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .falling-heart {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background-color: #f87171;
+      clip-path: polygon(
+        50% 0%,
+        61% 10%,
+        68% 20%,
+        75% 30%,
+        80% 40%,
+        85% 50%,
+        90% 60%,
+        95% 70%,
+        100% 80%,
+        95% 90%,
+        90% 100%,
+        50% 80%,
+        10% 100%,
+        5% 90%,
+        0% 80%,
+        5% 70%,
+        10% 60%,
+        15% 50%,
+        20% 40%,
+        25% 30%,
+        32% 20%,
+        39% 10%
+      );
+      opacity: 0.8;
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      z-index: 0;
+    }
+    
+    @keyframes fall {
+      0% { transform: translateY(-50px) rotate(0deg); opacity: 0.8; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    .btn-love {
+      background-color: #f87171;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    /* Popup overlay */
+    #popupOverlay {
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 1.5rem;
+    }
+    
+    #popupOverlay.active {
+      display: flex;
+    }
+    
+    #popupContent {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 1rem;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 10px 30px rgba(219, 39, 119, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 1rem 3.5rem 1rem;
+    }
+    
+    #popupImage {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 1rem;
+    }
+    
+    #popupClose {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(219, 39, 119, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff4d6d;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .tooltip.show {
+      opacity: 1;
+    }
+    
+    /* Music Control */
+    #music-control {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+    
+    #music-btn {
+      background: #ff4d6d;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+  #typewriter {
+            border-right: 2px solid #000;
+            padding-right: 5px;
+        }
+  </style>
+</head>
+<body>
+
+  <!-- Transition Overlay -->
+  <div class="transition-overlay">
+    <i class="fas fa-heart"></i>
+  </div>
+
+  <!-- Login Page -->
+  <div id="login-page" class="page active login-page">
+    <div id="login-container">
+      <div class="image-box">
+        <img src="https://storage.googleapis.com/a1aa/image/50d95813-53c3-4a56-6ec3-af1164432ce3.jpg" alt="Couple illustration"/>
+      </div>
+      <div id="title-text">enter passcode</div>
+      <input id="passcodeInput" type="text" readonly/>
+      <div class="keyboard">
+        <button type="button" class="login-btn" data-key="1">1</button>
+        <button type="button" class="login-btn" data-key="2">2</button>
+        <button type="button" class="login-btn" data-key="3">3</button>
+        <button type="button" class="login-btn" data-key="4">4</button>
+        <button type="button" class="login-btn" data-key="5">5</button>
+        <button type="button" class="login-btn" data-key="6">6</button>
+        <button type="button" class="login-btn" data-key="7">7</button>
+        <button type="button" class="login-btn" data-key="8">8</button>
+        <button type="button" class="login-btn" data-key="9">9</button>
+        <button type="button" class="login-btn" data-key=".">.</button>
+        <button type="button" class="login-btn" data-key="0">0</button>
+        <button id="clearBtn" type="button" class="login-btn">#</button>
+      </div>
+      <div id="tooltip" class="tooltip"></div>
+    </div>
+  </div>
+
+  <!-- Day Page -->
+  <div id="day-page" class="page day-page">
+    <div id="day-container">
+      <div class="absolute top-4 left-4 text-pink-300 text-4xl animate-bounce">
+        <i class="fas fa-heart pulse-heart"></i>
+      </div>
+      <div class="absolute top-10 right-6 text-pink-400 text-3xl animate-bounce">
+        <i class="fas fa-paw pulse-heart"></i>
+      </div>
+      
+      <section class="flex items-center space-x-5 mb-8">
+        <img src="https://github.com/Deniihermawan69/Music/raw/main/IMG-20250406-WA0000.jpg" class="rounded-full border-4 border-dashed border-pink-400 shadow-lg" width="64" height="64"/>
+        <div class="bg-pink-400 rounded-full px-5 py-3 text-white text-base font-semibold max-w-[260px] shadow-md">
+         How long have been together?
+         <i class="fas fa-heart ml-2 pulse-heart"></i>
+        </div>
+      </section>
+      
+      <section class="text-center mb-8">
+        <h2 class="text-pink-600 font-bold text-xl font-montserrat tracking-wide" id="totalDaysText">Loading...</h2>
+        <p class="text-pink-500 font-semibold font-montserrat mt-1 text-xs tracking-wide">Total Days Since 11 November 2017</p>
+      </section>
+      
+      <section class="flex justify-center space-x-6 mb-10">
+        <div class="text-center fade-in-up delay-1">
+          <div class="text-pink-500 font-extrabold text-4xl font-montserrat leading-none" id="days">--</div>
+          <div class="text-pink-600 font-semibold text-xs font-montserrat mt-1">Days</div>
+        </div>
+        <div class="text-center fade-in-up delay-2">
+          <div class="text-pink-500 font-extrabold text-4xl font-montserrat leading-none" id="hours">--</div>
+          <div class="text-pink-600 font-semibold text-xs font-montserrat mt-1">Hrs</div>
+        </div>
+        <div class="text-center fade-in-up delay-3">
+          <div class="text-pink-500 font-extrabold text-4xl font-montserrat leading-none" id="minutes">--</div>
+          <div class="text-pink-600 font-semibold text-xs font-montserrat mt-1">Mins</div>
+        </div>
+        <div class="text-center fade-in-up delay-4">
+          <div class="text-pink-500 font-extrabold text-4xl font-montserrat leading-none" id="seconds">--</div>
+          <div class="text-pink-600 font-semibold text-xs font-montserrat mt-1">Secs</div>
+        </div>
+      </section>
+      
+      <button id="day-next-button" class="btn-glow bg-pink-500 text-white rounded-full px-8 py-3 font-semibold flex items-center justify-center mx-auto shadow-lg">
+        <i class="fas fa-lock mr-3 icon-spin"></i>
+        Deni &amp; Desi
+      </button>
+    </div>
+  </div>
+
+  <!-- Momen Page -->
+  <div id="momen-page" class="page momen-page">
+    <div id="momen-container">
+      <header class="flex flex-col items-center mb-10">
+        <h1 class="text-pink-600 text-3xl font-bold flex items-center gap-3">
+          You &amp; Me
+          <i class="fas fa-heart heartbeat text-4xl"></i>
+        </h1>
+        <p class="text-pink-400 mt-2 text-sm tracking-wide">
+          A collection of our favorite moments
+        </p>
+      </header>
+
+      <main class="grid grid-cols-2 gap-6">
+        <div class="polaroid" data-index="0">
+          <img src="https://github.com/Deniihermawan69/Music/raw/main/IMG-20250406-WA0000.jpg"/>
+          <div class="polaroid-caption">Sweet Moments</div>
+        </div>
+        <div class="polaroid" data-index="1">
+          <img src="https://github.com/Deniihermawan69/Music/raw/main/IMG-20250406-WA0001.jpg"/>
+          <div class="polaroid-caption">Together Always</div>
+        </div>
+        <div class="polaroid" data-index="2">
+          <img src="https://github.com/Deniihermawan69/Music/raw/main/IMG-20250406-WA0003.jpg"/>
+          <div class="polaroid-caption">Cozy Nights</div>
+        </div>
+        <div class="polaroid" data-index="3">
+          <img src="https://github.com/Deniihermawan69/Music/raw/main/IMG_20211108_222400.jpg"/>
+          <div class="polaroid-caption">Fun Times</div>
+        </div>
+      </main>
+
+      <footer class="mt-12 text-center w-full">
+        <button id="momen-next-button" class="next-button">
+          Next
+        </button>
+        <button onclick="showPage('day-page')" style="padding-left:11px align:center" id="momen-next-button" class="next-button">
+          Prev
+        </button>
+      </footer>
+</button>
+      </footer>
+    </div>
+  </div>
+<!-- Ucapan Page -->
+<div id="ucapan-page" class="page ucapan-page">
+    <div id="ucapan-container">
+      <div class="flex justify-center space-x-6 mb-8">
+        <i class="fas fa-envelope-open-text text-pink-500 text-3xl pulse"></i>
+        <i class="fas fa-envelope text-pink-400 text-3xl pulse"></i>
+      </div>
+
+      <!-- Modern typewriter container -->
+      <div id="typewriter-container" class="text-center text-gray-800 text-base leading-relaxed mb-8 mx-auto" 
+           style="max-width: 90%; min-height: 300px; white-space: pre-wrap;"></div>
+
+      <div class="flex justify-center space-x-4">
+        <button id="btn-kirim-cinta" class="btn-love flex items-center space-x-2">
+          <i class="fas fa-heart"></i>
+          <span>Kirim Cinta</span>
+        </button>
+      </div>
+      <p style="height: 5px"></p>
+      <div style="padding-bottom:5px" class="flex justify-center space-x-4">
+        <button onclick="showPage('momen-page')" id="btn-kirim-cinta" class="btn-love flex items-center space-x-2">
+          <span>Prev</span>
+        </button>
+      </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fullText = `Halloo cayangkuu
+Nggak kerasa yaa kita udah 7 tahun aja pacaran, waktu tuh cepet banget jalaninnyaa! Banyak suka duka yang udah kita lewatin bareng, banyak juga masalah yang datang ke hubungan kita, tapi kita bisa hadapin semuanya bareng-bareng.
+Makasii banget yaa udah mau terus sama akuu, udah nyempetin waktu buat aku, udah sabar banget sama sikap aku yang kadang ngeselin, dan makasii juga udah ngasih effort buat bikin aku bahagiaaa!
+Tetep stay sama aku ya, jangan kemana-manaa~ Aku harap kita bisa terus sama-samaa ya, promise yaaa?? ✌🏻✌🏻
+
+Aku pengen banget hubungan kita terus kayak gini, jangan berubah yaa? Aku nggak mau kamu berubahh, tetap bertahan sama aku apapun yang terjadi nanti. Kalau ada masalah, hadapin sama-sama ya, jangan tinggalin aku sendirian, plis.
+Aku tuh bersyukur banget bisa kenal orang sebaik kamu, nggak pernah nyesel ketemu kamu. Tuhan tuh baik banget, aku minta kebahagiaan eh malah dikasihnya kamuuu~
+Pokoknya kamu jangan kemana-mana yaa, apalagi cari cewe baru, AWASSS! (mode galak manjaa: ON 😠😠😠)
+
+Di mensive kali ini, aku bener-bener berharap semoga ke depannya kita makin ngerti satu sama lain, saling jaga, dan saling sayang. Kamu nggak usah nyari kebahagiaan di tempat lain ya, cukup di aku ajaa~ Jangan sampai ada orang ketiga yang bisa misahin kita, plis yaa!
+I love u so muchh bububb! 💗💗💐💐💋💋`;
+
+    const container = document.getElementById('typewriter-container');
+    let position = 0;
+    
+    // Typing configuration
+    const baseSpeed = 50; // Normal typing speed
+    const initialDelay = 8000; // 6-second initial delay
+    
+    function typeWriter() {
+        if (position < fullText.length) {
+            const char = fullText.charAt(position);
+            
+            if (char === '\n') {
+                container.innerHTML += '<br>';
+                position++;
+                setTimeout(typeWriter, 100); // Short pause for line breaks
+            } else {
+                container.innerHTML += char;
+                position++;
+                setTimeout(typeWriter, baseSpeed + Math.random() * 20); // Slight natural variation
+            }
+            
+            // Auto-scroll
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    // Initial setup
+    container.innerHTML = '';
+    
+    // Wait 6 seconds before starting
+    setTimeout(typeWriter, initialDelay);
+});
+</script>
+
+  <!-- Popup Overlay -->
+  <div id="popupOverlay">
+    <div id="popupContent">
+      <button id="popupClose">&times;</button>
+      <img id="popupImage" src="" alt="Enlarged photo"/>
+    </div>
+  </div>
+
+  <!-- Falling Hearts -->
+  <div class="falling-heart" style="left:10%;animation-duration:7s;animation-delay:0s;width:18px;height:18px;"></div>
+  <div class="falling-heart" style="left:25%;animation-duration:5s;animation-delay:1.5s;width:22px;height:22px;"></div>
+  <div class="falling-heart" style="left:40%;animation-duration:6.5s;animation-delay:0.5s;"></div>
+  <div class="falling-heart" style="left:55%;animation-duration:8s;animation-delay:2s;width:24px;height:24px;"></div>
+  <div class="falling-heart" style="left:70%;animation-duration:6s;animation-delay:1s;width:19px;height:19px;"></div>
+  <div class="falling-heart" style="left:85%;animation-duration:7.5s;animation-delay:0.7s;width:21px;height:21px;"></div>
+
+  <!-- Background Music -->
+  <audio id="bgMusic" loop>
+    <source src="https://raw.githubusercontent.com/Deniihermawan69/Music/main/Musik.mp3" type="audio/mpeg">
+    Browser Anda tidak mendukung elemen audio.
+  </audio>
+
+  <!-- Music Control Button -->
+  <div id="music-control">
+    <button id="music-btn" onclick="toggleMusic()">
+      <i id="music-icon" class="fas fa-music"></i>
+    </button>
+  </div>
+
+  <script>
+    // Navigation System with Enhanced Transitions
+    const transitionOverlay = document.querySelector('.transition-overlay');
+    const transitionTypes = ['slide-left', 'slide-right', 'zoom', 'flip'];
+    let currentTransitionType = 0;
+    
+    async function showPage(pageId) {
+      // Show transition overlay
+      transitionOverlay.classList.add('active');
+      
+      // Get current and next pages
+      const currentPage = document.querySelector('.page.active');
+      const nextPage = document.getElementById(pageId);
+      
+      if (currentPage) {
+        // Add leaving class to current page
+        currentPage.classList.add('leaving');
+        currentPage.classList.add(transitionTypes[currentTransitionType]);
+        
+        // Wait for animation to complete
+        await new Promise(resolve => setTimeout(resolve, 700));
+        
+        // Remove active class from current page
+        currentPage.classList.remove('active');
+        currentPage.classList.remove('leaving');
+        currentPage.classList.remove(transitionTypes[currentTransitionType]);
+      }
+      
+      // Add entering class to next page
+      nextPage.classList.add('entering');
+      nextPage.classList.add(transitionTypes[currentTransitionType]);
+      
+      // Show next page
+      nextPage.classList.add('active');
+      
+      // Wait for next tick to start animation
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      
+      // Remove entering class to trigger animation
+      nextPage.classList.remove('entering');
+      nextPage.classList.remove(transitionTypes[currentTransitionType]);
+      
+      // Hide transition overlay after a short delay
+      setTimeout(() => {
+        transitionOverlay.classList.remove('active');
+      }, 300);
+      
+      // Rotate transition type for next time
+      currentTransitionType = (currentTransitionType + 1) % transitionTypes.length;
+      
+      window.scrollTo(0, 0);
+      
+      // Start animations when page becomes visible
+      if (pageId === 'day-page') {
+        startDayPage();
+      }
+    }
+
+    // Login Page Logic
+    const correctPasscode = "1108";
+    const input = document.getElementById("passcodeInput");
+    const buttons = document.querySelectorAll("button[data-key]");
+    const clearBtn = document.getElementById("clearBtn");
+    const titleText = document.getElementById("title-text");
+    const loginContainer = document.getElementById("login-container");
+    const tooltip = document.getElementById("tooltip");
+
+    buttons.forEach(button => {
+      button.addEventListener("click", () => {
+        if (input.value.length < 12) {
+          input.value += button.getAttribute("data-key");
+          animateButton(button);
+        }
+        if (input.value.length === correctPasscode.length) {
+          checkPasscode();
+        }
+      });
+    });
+
+    function animateButton(button) {
+      button.style.transform = "scale(0.9)";
+      setTimeout(() => {
+        button.style.transform = "scale(1)";
+      }, 100);
+    }
+
+    function showTooltip(message) {
+      tooltip.textContent = message;
+      tooltip.classList.add("show");
+      setTimeout(() => {
+        tooltip.classList.remove("show");
+      }, 3000);
+    }
+
+    function shakeContainer() {
+      loginContainer.classList.add("shake");
+      setTimeout(() => {
+        loginContainer.classList.remove("shake");
+      }, 500);
+    }
+
+    function vibrateDevice() {
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
+    }
+
+    function checkPasscode() {
+      if (input.value === correctPasscode) {
+        titleText.textContent = "Access Granted! Redirecting...";
+        titleText.style.color = "#ff4d6d";
+        titleText.animate(
+          [
+            { transform: "scale(1)" },
+            { transform: "scale(1.1)" },
+            { transform: "scale(1)" },
+          ],
+          { duration: 600, easing: "ease-in-out" }
+        );
+        setTimeout(() => {
+          showPage('day-page');
+        }, 1200);
+      } else {
+        showTooltip("Kamu lupa tanggal jadian kita 😡📱");
+        alert("Kamu lupa tanggal jadian kita 😡📱");
+        shakeContainer();
+        vibrateDevice();
+        input.value = "";
+        titleText.textContent = "enter passcode";
+        titleText.style.color = "#ff4d6d";
+      }
+    }
+
+    clearBtn.addEventListener("click", () => {
+      input.value = "";
+      hideTooltip();
+    });
+
+    function hideTooltip() {
+      tooltip.classList.remove("show");
+    }
+
+    // Day Page Logic
+    function startDayPage() {
+      const startDate = new Date(2017, 10, 11);
+      const totalDaysText = document.getElementById('totalDaysText');
+      const daysEl = document.getElementById('days');
+      const hoursEl = document.getElementById('hours');
+      const minutesEl = document.getElementById('minutes');
+      const secondsEl = document.getElementById('seconds');
+
+      function updateTimer() {
+        const now = new Date();
+        const diff = now - startDate;
+
+        const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+        totalDaysText.textContent = `${totalDays} Days Together`;
+
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+
+        daysEl.textContent = totalDays;
+        hoursEl.textContent = hours;
+        minutesEl.textContent = minutes;
+        secondsEl.textContent = seconds;
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    }
+
+    document.getElementById('day-next-button').addEventListener('click', () => {
+      showPage('momen-page');
+    });
+
+    // Momen Page Logic
+    const polaroids = document.querySelectorAll(".polaroid");
+    const popupOverlay = document.getElementById("popupOverlay");
+    const popupClose = document.getElementById("popupClose");
+    const popupImage = document.getElementById("popupImage");
+
+    polaroids.forEach((card) => {
+      card.addEventListener("click", () => {
+        const img = card.querySelector("img");
+        popupImage.src = img.src;
+        popupImage.alt = img.alt;
+        popupOverlay.classList.add("active");
+      });
+    });
+
+    popupClose.addEventListener("click", () => {
+      popupOverlay.classList.remove("active");
+    });
+
+    popupOverlay.addEventListener("click", (e) => {
+      if (e.target === popupOverlay) {
+        popupClose.click();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && popupOverlay.classList.contains("active")) {
+        popupClose.click();
+      }
+    });
+
+    document.getElementById('momen-next-button').addEventListener('click', () => {
+      showPage('ucapan-page');
+    });
+
+    // Ucapan Page Logic
+    document.getElementById('btn-kirim-cinta').addEventListener('click', () => {
+      // Add a heart explosion animation
+      for (let i = 0; i < 20; i++) {
+        createHeart();
+      }
+      alert("Cinta terkirim! ❤️");
+    });
+
+    // Create floating hearts for login page
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      const size = 10 + Math.random() * 20;
+      heart.style.width = heart.style.height = size + "px";
+      heart.style.animationDuration = 3 + Math.random() * 3 + "s";
+      heart.style.opacity = 0.5 + Math.random() * 0.5;
+      document.body.appendChild(heart);
+
+      setTimeout(() => {
+        heart.remove();
+      }, 6000);
+    }
+    setInterval(createHeart, 400);
+
+    // Background Music Control
+    const bgMusic = document.getElementById('bgMusic');
+    let isMusicPlaying = false;
+
+    function toggleMusic() {
+      if (isMusicPlaying) {
+        bgMusic.pause();
+        document.getElementById('music-icon').classList.remove('fa-pause');
+        document.getElementById('music-icon').classList.add('fa-music');
+      } else {
+        bgMusic.play();
+        document.getElementById('music-icon').classList.remove('fa-music');
+        document.getElementById('music-icon').classList.add('fa-pause');
+      }
+      isMusicPlaying = !isMusicPlaying;
+    }
+
+    // Auto play musik setelah interaksi pengguna
+    document.body.addEventListener('click', function initMusic() {
+      if (!bgMusic.src) return;
+      
+      // Set volume rendah (30%)
+      bgMusic.volume = 0.3;
+      
+      // Coba memutar musik
+      bgMusic.play().then(() => {
+        isMusicPlaying = true;
+        document.getElementById('music-icon').classList.add('fa-pause');
+      }).catch(error => {
+        console.log("Autoplay prevented:", error);
+      });
+      
+      // Hapus event listener setelah dijalankan sekali
+      document.body.removeEventListener('click', initMusic);
+    }, { once: true });
+  </script>
+</body>
+</html>
